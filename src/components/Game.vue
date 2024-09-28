@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import Spheres from './Spheres.vue'
 
+const MAX_ROW = 3
+const MAX_COL = 3
 const board = ref([
 	[
 		{ player: null, count: 0, max: 1 },
@@ -30,7 +32,25 @@ const board = ref([
 ])
 
 function add(row: number, col: number) {
+	if (board.value[row][col].count === board.value[row][col].max)
+		return expand(row, col)
 	board.value[row][col].count++
+}
+
+function expand(row: number, col: number) {
+	const expandTo = [
+		{ r: row - 1, c: col },
+		{ r: row + 1, c: col },
+		{ r: row, c: col + 1 },
+		{ r: row, c: col - 1 },
+	]
+
+	expandTo.forEach(cell => {
+		if (cell.r < 0 || cell.c < 0 || cell.r > MAX_ROW || cell.c > MAX_COL) return
+
+		board.value[cell.r][cell.c].count++
+	})
+	board.value[row][col].count = 0
 }
 </script>
 
