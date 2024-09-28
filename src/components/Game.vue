@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onWatcherCleanup, ref, watch } from 'vue'
 import Spheres from './Spheres.vue'
 
 const MAX_ROW = 3
@@ -32,8 +32,8 @@ const board = ref([
 ])
 
 function add(row: number, col: number) {
-	if (board.value[row][col].count === board.value[row][col].max)
-		return expand(row, col)
+	// if (board.value[row][col].count === board.value[row][col].max)
+	// 	return expand(row, col)
 	board.value[row][col].count++
 }
 
@@ -52,6 +52,16 @@ function expand(row: number, col: number) {
 	})
 	board.value[row][col].count = 0
 }
+
+watch(board.value, (oldBoard, newBoard) => {
+	newBoard.forEach((row, i) => {
+		row.forEach((cell, j) => {
+			if (!(newBoard[i][j].count === newBoard[i][j].max + 1)) return
+			expand(i, j)
+			board.value[i][j].count = 0
+		})
+	})
+})
 </script>
 
 <template>
