@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { onWatcherCleanup, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import Spheres from './Spheres.vue'
+import { PLAYERS } from '@/lib/constants'
+import { cn } from '@/lib/utils'
 
+const PLAYERS_COUNT = 2
 const MAX_ROW = 3
 const MAX_COL = 3
-const board = ref([
+
+let turn = ref(0)
+const board = ref<{ player: null | number; count: number; max: number }[][]>([
 	[
 		{ player: null, count: 0, max: 1 },
 		{ player: null, count: 0, max: 2 },
@@ -32,9 +37,16 @@ const board = ref([
 ])
 
 function add(row: number, col: number) {
-	// if (board.value[row][col].count === board.value[row][col].max)
-	// 	return expand(row, col)
+	if (
+		board.value[row][col].player !== null &&
+		board.value[row][col].player !== turn.value
+	)
+		return null
+	console.log(board.value[row][col].player, turn.value)
+
+	board.value[row][col].player = turn.value
 	board.value[row][col].count++
+	nextPlayer()
 }
 
 function expand(row: number, col: number) {
@@ -49,8 +61,15 @@ function expand(row: number, col: number) {
 		if (cell.r < 0 || cell.c < 0 || cell.r > MAX_ROW || cell.c > MAX_COL) return
 
 		board.value[cell.r][cell.c].count++
+		board.value[cell.r][cell.c].player = board.value[row][col].player
 	})
 	board.value[row][col].count = 0
+	board.value[row][col].player = null
+}
+
+function nextPlayer() {
+	if (turn.value === PLAYERS_COUNT - 1) turn.value = 0
+	else turn.value++
 }
 
 watch(board.value, (oldBoard, newBoard) => {
@@ -59,6 +78,7 @@ watch(board.value, (oldBoard, newBoard) => {
 			if (!(newBoard[i][j].count === newBoard[i][j].max + 1)) return
 			expand(i, j)
 			board.value[i][j].count = 0
+			board.value[i][j].player = null
 		})
 	})
 })
@@ -71,10 +91,17 @@ watch(board.value, (oldBoard, newBoard) => {
 			<li
 				v-for="(box, j) in row"
 				:key="`i,j`"
-				class="h-10 aspect-square border border-primary cursor-pointer grid place-items-center"
+				:class="
+					cn('h-10 aspect-square cursor-pointer grid place-items-center border')
+				"
 				@click="add(i, j)"
+				:style="{ borderColor: PLAYERS[turn].color }"
 			>
-				<Spheres :count="box.count" :animate-count="box.max" />
+				<Spheres
+					:count="box.count"
+					:animate-count="box.max"
+					:player="box.player"
+				/>
 			</li>
 		</div>
 	</ul>

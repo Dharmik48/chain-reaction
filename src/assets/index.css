@@ -26,6 +26,10 @@
     --destructive-foreground: 4 97% 91%;
     --ring: 44 87% 80%;
     --radius: 0.5rem;
+    --player-red: red;
+    --player-green: green;
+    --player-blue: blue;
+    --player-pink: pink;
   }
 
   .dark {
@@ -48,6 +52,10 @@
     --destructive: 4 97% 56%;
     --destructive-foreground: 0 0% 100%;
     --ring: 44 87% 80%;
+    --player-red: red;
+    --player-green: green;
+    --player-blue: blue;
+    --player-pink: pink;
   }
 }
 
