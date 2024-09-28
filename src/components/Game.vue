@@ -2,39 +2,15 @@
 import { ref, watch } from 'vue'
 import Spheres from './Spheres.vue'
 import { PLAYERS } from '@/lib/constants'
-import { cn } from '@/lib/utils'
+import { cn, generateBoard } from '@/lib/utils'
+import { Cell } from '@/types'
 
 const PLAYERS_COUNT = 2
-const MAX_ROW = 3
-const MAX_COL = 3
+const ROWS = 7
+const COLS = 7
 
 let turn = ref(0)
-const board = ref<{ player: null | number; count: number; max: number }[][]>([
-	[
-		{ player: null, count: 0, max: 1 },
-		{ player: null, count: 0, max: 2 },
-		{ player: null, count: 0, max: 2 },
-		{ player: null, count: 0, max: 1 },
-	],
-	[
-		{ player: null, count: 0, max: 2 },
-		{ player: null, count: 0, max: 3 },
-		{ player: null, count: 0, max: 3 },
-		{ player: null, count: 0, max: 2 },
-	],
-	[
-		{ player: null, count: 0, max: 2 },
-		{ player: null, count: 0, max: 3 },
-		{ player: null, count: 0, max: 3 },
-		{ player: null, count: 0, max: 2 },
-	],
-	[
-		{ player: null, count: 0, max: 1 },
-		{ player: null, count: 0, max: 2 },
-		{ player: null, count: 0, max: 2 },
-		{ player: null, count: 0, max: 1 },
-	],
-])
+const board = ref<Cell[][]>(generateBoard(ROWS, COLS))
 
 function add(row: number, col: number) {
 	if (
@@ -42,7 +18,6 @@ function add(row: number, col: number) {
 		board.value[row][col].player !== turn.value
 	)
 		return null
-	console.log(board.value[row][col].player, turn.value)
 
 	board.value[row][col].player = turn.value
 	board.value[row][col].count++
@@ -58,7 +33,7 @@ function expand(row: number, col: number) {
 	]
 
 	expandTo.forEach(cell => {
-		if (cell.r < 0 || cell.c < 0 || cell.r > MAX_ROW || cell.c > MAX_COL) return
+		if (cell.r < 0 || cell.c < 0 || cell.r >= ROWS || cell.c >= COLS) return
 
 		board.value[cell.r][cell.c].count++
 		board.value[cell.r][cell.c].player = board.value[row][col].player
@@ -77,8 +52,8 @@ watch(board.value, (oldBoard, newBoard) => {
 		row.forEach((cell, j) => {
 			if (!(newBoard[i][j].count === newBoard[i][j].max + 1)) return
 			expand(i, j)
-			board.value[i][j].count = 0
-			board.value[i][j].player = null
+			// board.value[i][j].count = 0
+			// board.value[i][j].player = null
 		})
 	})
 })
