@@ -2,18 +2,18 @@
 import { nextTick, ref, useTemplateRef, watch } from 'vue'
 import Spheres from './Spheres.vue'
 import { PLAYERS } from '@/lib/constants'
-import { cn, generateBoard, getExpandToCells, getXY } from '@/lib/utils'
+import { generateBoard, getExpandToCells, getXY } from '@/lib/utils'
 import { Cell } from '@/types'
 import gsap from 'gsap'
 
 const PLAYERS_COUNT = 2
-const ROWS = 7
-const COLS = 7
+const ROWS = 10
+const COLS = 10
 
+// TODO: disable clicks while animation is playing
 let turn = ref(0)
 const boardRef = useTemplateRef('board-ref')
 const board = ref<Cell[][]>(generateBoard(ROWS, COLS))
-const movingSpheres = ref<{ x: number; y: number }[]>([])
 
 function add(row: number, col: number) {
 	if (
@@ -43,46 +43,29 @@ function nextPlayer() {
 	else turn.value++
 }
 
-function animateSphereAndExpand(row: number, col: number) {
+async function animateSphereAndExpand(row: number, col: number) {
 	const expandTo = getExpandToCells(row, col, ROWS, COLS)
 
-	const originCell = boardRef.value?.querySelector(`#c${row}-${col}`)
-	const spheresToAnimate = originCell?.querySelectorAll('.moving-sphere')
+	await nextTick()
 
-	spheresToAnimate?.forEach((sphere, i) =>
+	const originCell = boardRef.value?.querySelector(`#c${row}-${col}`)
+	const spheresToAnimate: any = originCell?.querySelectorAll('.moving-sphere')
+
+	spheresToAnimate?.forEach((sphere: any, i: number) => {
 		gsap.to(sphere, {
-			duration: 1,
+			duration: 0.5,
 			x: `+=${Number(sphere.dataset.x)}`,
 			y: `+=${Number(sphere.dataset.y)}`,
+			onStart: () => {
+				originCell?.classList.add('hide-spheres')
+			},
 			onComplete: () => {
 				if (i !== expandTo.length - 1) return
 				expand(row, col)
+				originCell?.classList.remove('hide-spheres')
 			},
 		})
-	)
-
-	// expandTo.forEach((cell, i) => {
-	// 	const destinationCell = boardRef.value
-	// 		?.querySelector(`#c${cell.r}-${cell.c}`)
-	// 		?.getBoundingClientRect()
-
-	// 	if (!destinationCell || !originCell) return
-
-	// 	const sphere = { x: 0, y: 0 }
-	// 	movingSpheres.value.push(sphere)
-
-	// 	const { x, y } = getXY(i)
-	// 	console.log(x, y)
-
-	// 	gsap.to(sphere, {
-	// 		duration: 1,
-	// 		x: `+=${x}px`,
-	// 		y: `+=${y}px`,
-	// 	})
-
-	// 	// board.value[cell.r][cell.c].count++
-	// 	// board.value[cell.r][cell.c].player = board.value[row][col].player
-	// })
+	})
 }
 
 watch(board.value, (oldBoard, newBoard) => {
@@ -108,28 +91,28 @@ watch(board.value, (oldBoard, newBoard) => {
 				:id="`c${i}-${j}`"
 			>
 				<div
-					v-if="box.player !== null"
+					v-if="box.player !== null && j !== 0"
 					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
 					:style="{backgroundColor: PLAYERS[box.player!].color}"
 					data-x="-40"
 					data-y="0"
 				></div>
 				<div
-					v-if="box.player !== null"
+					v-if="box.player !== null && j !== COLS - 1"
 					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
 					:style="{backgroundColor: PLAYERS[box.player!].color}"
 					data-x="40"
 					data-y="0"
 				></div>
 				<div
-					v-if="box.player !== null"
+					v-if="box.player !== null && i !== 0"
 					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
 					:style="{backgroundColor: PLAYERS[box.player!].color}"
 					data-x="0"
 					data-y="-40"
 				></div>
 				<div
-					v-if="box.player !== null"
+					v-if="box.player !== null && i !== ROWS - 1"
 					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
 					:style="{backgroundColor: PLAYERS[box.player!].color}"
 					data-x="0"

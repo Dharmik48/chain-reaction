@@ -12,7 +12,9 @@ defineProps<{
 <template>
 	<div
 		v-if="count === 1"
-		:class="cn('h-4 w-4 rounded-full', animateCount === 1 && 'animate-spin')"
+		:class="
+			cn('h-4 w-4 rounded-full sphere', animateCount === 1 && 'animate-spin')
+		"
 		:style="{backgroundColor: PLAYERS[player!].color}"
 	></div>
 	<div
@@ -20,11 +22,11 @@ defineProps<{
 		:class="`flex ${animateCount === 2 && 'animate-spin'}`"
 	>
 		<div
-			class="h-4 w-4 rounded-full translate-x-1"
+			class="h-4 w-4 rounded-full translate-x-1 sphere"
 			:style="{backgroundColor: PLAYERS[player!].color}"
 		></div>
 		<div
-			class="h-4 w-4 rounded-full -translate-x-1"
+			class="h-4 w-4 rounded-full -translate-x-1 sphere"
 			:style="{backgroundColor: PLAYERS[player!].color}"
 		></div>
 	</div>
@@ -35,16 +37,16 @@ defineProps<{
 		}`"
 	>
 		<div
-			class="h-4 w-4 rounded-full translate-y-1 shadow"
+			class="h-4 w-4 rounded-full translate-y-1 shadow sphere"
 			:style="{backgroundColor: PLAYERS[player!].color}"
 		></div>
 		<div class="flex -translate-y-1">
 			<div
-				class="h-4 w-4 rounded-full translate-x-1 shadow-md"
+				class="h-4 w-4 rounded-full translate-x-1 shadow-md sphere"
 				:style="{backgroundColor: PLAYERS[player!].color}"
 			></div>
 			<div
-				class="h-4 w-4 rounded-full -translate-x-1 shadow-md"
+				class="h-4 w-4 rounded-full -translate-x-1 shadow-md sphere"
 				:style="{backgroundColor: PLAYERS[player!].color}"
 			></div>
 		</div>
