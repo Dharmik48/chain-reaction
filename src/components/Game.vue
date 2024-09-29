@@ -2,7 +2,7 @@
 import { nextTick, ref, useTemplateRef, watch } from 'vue'
 import Spheres from './Spheres.vue'
 import { PLAYERS } from '@/lib/constants'
-import { generateBoard, getExpandToCells, getXY } from '@/lib/utils'
+import { generateBoard, getExpandToCells } from '@/lib/utils'
 import { Cell } from '@/types'
 import gsap from 'gsap'
 
@@ -68,9 +68,9 @@ async function animateSphereAndExpand(row: number, col: number) {
 	})
 }
 
-watch(board.value, (oldBoard, newBoard) => {
+watch(board.value, (_oldBoard, newBoard) => {
 	newBoard.forEach((row, i) => {
-		row.forEach((cell, j) => {
+		row.forEach((_cell, j) => {
 			if (!(newBoard[i][j].count === newBoard[i][j].max + 1)) return
 			animateSphereAndExpand(i, j)
 		})

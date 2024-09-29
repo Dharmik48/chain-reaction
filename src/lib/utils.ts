@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function generateBoard(x: number, y: number): Cell[][] {
-	return [...Array(x).keys()].map((row, i) =>
-		[...Array(y).keys()].map((col, j) => {
+	return [...Array(x).keys()].map((_row, i) =>
+		[...Array(y).keys()].map((_col, j) => {
 			let max = 3
 			if (i === 0 || i === y - 1 || j === 0 || j === x - 1) max = 2
 			if (
@@ -39,25 +39,4 @@ export function getExpandToCells(
 	return all.filter(
 		cell => !(cell.r < 0 || cell.c < 0 || cell.r >= rows || cell.c >= cols)
 	)
-}
-
-export function getXY(index: number) {
-	const xy = { x: 0, y: 0 }
-
-	switch (index) {
-		case 0:
-			xy.x = -40
-			break
-		case 1:
-			xy.x = 40
-			break
-		case 2:
-			xy.y = 40
-			break
-		case 1:
-			xy.y = -40
-			break
-	}
-
-	return xy
 }
