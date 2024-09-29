@@ -22,3 +22,42 @@ export function generateBoard(x: number, y: number): Cell[][] {
 		})
 	)
 }
+
+export function getExpandToCells(
+	row: number,
+	col: number,
+	rows: number,
+	cols: number
+) {
+	const all = [
+		{ r: row - 1, c: col },
+		{ r: row + 1, c: col },
+		{ r: row, c: col + 1 },
+		{ r: row, c: col - 1 },
+	]
+
+	return all.filter(
+		cell => !(cell.r < 0 || cell.c < 0 || cell.r >= rows || cell.c >= cols)
+	)
+}
+
+export function getXY(index: number) {
+	const xy = { x: 0, y: 0 }
+
+	switch (index) {
+		case 0:
+			xy.x = -40
+			break
+		case 1:
+			xy.x = 40
+			break
+		case 2:
+			xy.y = 40
+			break
+		case 1:
+			xy.y = -40
+			break
+	}
+
+	return xy
+}

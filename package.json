@@ -11,6 +11,7 @@
   "dependencies": {
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "gsap": "^3.12.5",
     "lucide-vue-next": "^0.446.0",
     "radix-vue": "^1.9.6",
     "tailwind-merge": "^2.5.2",
