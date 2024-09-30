@@ -10,12 +10,12 @@ export function generateBoard(x: number, y: number): Cell[][] {
 	return [...Array(x).keys()].map((_row, i) =>
 		[...Array(y).keys()].map((_col, j) => {
 			let max = 3
-			if (i === 0 || i === y - 1 || j === 0 || j === x - 1) max = 2
+			if (i === 0 || i === x - 1 || j === 0 || j === y - 1) max = 2
 			if (
 				(i === 0 && j === 0) ||
-				(i === 0 && j === x - 1) ||
-				(i === y - 1 && j === 0) ||
-				(i === y - 1 && j === x - 1)
+				(i === 0 && j === y - 1) ||
+				(i === x - 1 && j === 0) ||
+				(i === x - 1 && j === y - 1)
 			)
 				max = 1
 			return { player: null, count: 0, max }
