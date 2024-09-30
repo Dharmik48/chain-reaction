@@ -11,14 +11,14 @@ defineProps<{
 
 <template>
 	<div
-		v-if="count === 1"
+		v-if="count === 1 && player !== null"
 		:class="
 			cn('h-4 w-4 rounded-full sphere', animateCount === 1 && 'animate-spin')
 		"
 		:style="{backgroundColor: PLAYERS[player!].color}"
 	></div>
 	<div
-		v-else-if="count === 2"
+		v-else-if="count === 2 && player !== null"
 		:class="`flex ${animateCount === 2 && 'animate-spin'}`"
 	>
 		<div
@@ -31,7 +31,7 @@ defineProps<{
 		></div>
 	</div>
 	<div
-		v-else-if="count === 3"
+		v-else-if="count === 3 && player !== null"
 		:class="`flex flex-col items-center ${
 			animateCount === 3 && 'animate-spin'
 		}`"

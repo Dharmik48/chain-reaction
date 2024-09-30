@@ -7,8 +7,9 @@ import { Cell } from '@/types'
 import gsap from 'gsap'
 
 const PLAYERS_COUNT = 2
-const ROWS = 10
-const COLS = 10
+const ROWS = 12
+const COLS = 6
+const ANIMATION_DURATION = 0.5
 
 // TODO: disable clicks while animation is playing
 let turn = ref(0)
@@ -33,9 +34,9 @@ function expand(row: number, col: number) {
 	expandTo.forEach(cell => {
 		board.value[cell.r][cell.c].count++
 		board.value[cell.r][cell.c].player = board.value[row][col].player
+		board.value[row][col].count--
 	})
-	board.value[row][col].count = 0
-	board.value[row][col].player = null
+	if (board.value[row][col].count === 0) board.value[row][col].player = null
 }
 
 function nextPlayer() {
@@ -53,13 +54,14 @@ async function animateSphereAndExpand(row: number, col: number) {
 
 	spheresToAnimate?.forEach((sphere: any, i: number) => {
 		gsap.to(sphere, {
-			duration: 0.5,
+			duration: ANIMATION_DURATION,
 			x: `+=${Number(sphere.dataset.x)}`,
 			y: `+=${Number(sphere.dataset.y)}`,
 			onStart: () => {
 				originCell?.classList.add('hide-spheres')
 			},
 			onComplete: () => {
+				gsap.set(sphere, { x: 0, y: 0 })
 				if (i !== expandTo.length - 1) return
 				expand(row, col)
 				originCell?.classList.remove('hide-spheres')
@@ -71,7 +73,7 @@ async function animateSphereAndExpand(row: number, col: number) {
 watch(board.value, (_oldBoard, newBoard) => {
 	newBoard.forEach((row, i) => {
 		row.forEach((_cell, j) => {
-			if (!(newBoard[i][j].count === newBoard[i][j].max + 1)) return
+			if (newBoard[i][j].count < newBoard[i][j].max + 1) return
 			animateSphereAndExpand(i, j)
 		})
 	})
@@ -125,13 +127,5 @@ watch(board.value, (_oldBoard, newBoard) => {
 				/>
 			</li>
 		</div>
-		<!-- <div
-			v-for="(div, index) in movingSpheres"
-			:key="index"
-			class="absolute h-10 aspect-square cursor-pointer grid place-items-center"
-			:style="{ left: div.x + 'px', top: div.y + 'px' }"
-		>
-			<div class="h-4 w-4 rounded-full bg-white"></div>
-		</div> -->
 	</ul>
 </template>
