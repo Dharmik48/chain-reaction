@@ -31,7 +31,7 @@ import { RouterView } from 'vue-router'
 				</div>
 			</div>
 			<h1
-				class="text-2xl md:text-5xl bg-gradient-to-r from-red-500 to-blue-700 bg-clip-text text-transparent w-fit font-sixtyfour my-8 text-center"
+				class="text-3xl md:text-5xl bg-gradient-to-r from-red-500 to-blue-700 bg-clip-text text-transparent w-fit font-sixtyfour my-8 text-center"
 			>
 				Chain Reaction
 			</h1>

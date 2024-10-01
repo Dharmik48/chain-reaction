@@ -88,7 +88,7 @@ watch(board.value, (_oldBoard, newBoard) => {
 </script>
 
 <template>
-	<ul ref="board-ref" class="relative">
+	<ul ref="board-ref" class="relative px-10 mx-auto">
 		<div v-for="(row, i) in board" :key="i" class="flex">
 			<li
 				v-for="(box, j) in row"
