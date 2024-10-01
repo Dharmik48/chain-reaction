@@ -11,17 +11,18 @@ const ROWS = 12
 const COLS = 6
 const ANIMATION_DURATION = 0.5
 
-// TODO: disable clicks while animation is playing
 let turn = ref(0)
 const boardRef = useTemplateRef('board-ref')
 const board = ref<Cell[][]>(generateBoard(ROWS, COLS))
+const disabled = ref(false)
 
 function add(row: number, col: number) {
 	if (
-		board.value[row][col].player !== null &&
-		board.value[row][col].player !== turn.value
+		disabled.value ||
+		(board.value[row][col].player !== null &&
+			board.value[row][col].player !== turn.value)
 	)
-		return null
+		return
 
 	board.value[row][col].player = turn.value
 	board.value[row][col].count++
@@ -45,6 +46,7 @@ function nextPlayer() {
 }
 
 async function animateSphereAndExpand(row: number, col: number) {
+	disabled.value = true
 	const expandTo = getExpandToCells(row, col, ROWS, COLS)
 
 	await nextTick()
@@ -65,6 +67,7 @@ async function animateSphereAndExpand(row: number, col: number) {
 				if (i !== expandTo.length - 1) return
 				expand(row, col)
 				originCell?.classList.remove('hide-spheres')
+				disabled.value = false
 			},
 		})
 	})
