@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/number-field'
 import { Input } from './ui/input'
 import router from '@/router'
+import { cn } from '@/lib/utils'
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -74,39 +75,40 @@ const onSubmit = handleSubmit(values => {
 				<FormDescription>Upto 8 players</FormDescription>
 				<FormMessage />
 			</FormItem>
-			<div class="space-y-2">
-				<FormLabel>Grid Size</FormLabel>
-				<div class="flex items-center gap-6">
-					<FormField v-slot="{ componentField }" name="rows">
-						<FormItem>
-							<FormControl>
-								<Input
-									type="number"
-									placeholder="Rows"
-									v-bind="componentField"
-								/>
-							</FormControl>
-							<FormDescription v-if="!errors.rows"> Rows </FormDescription>
-							<FormMessage />
-						</FormItem>
-					</FormField>
-					<span class="h-10 self-start grid place-items-center">x</span>
-					<FormField v-slot="{ componentField }" name="cols">
-						<FormItem>
-							<FormControl>
-								<Input
-									type="number"
-									placeholder="Cols"
-									v-bind="componentField"
-								/>
-							</FormControl>
-							<FormDescription v-if="!errors.cols"> Columns </FormDescription>
-							<FormMessage />
-						</FormItem>
-					</FormField>
-				</div>
-			</div>
 		</FormField>
+		<div class="space-y-2">
+			<label
+				:class="
+					cn(
+						'text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70',
+						(errors.rows || errors.cols) && 'text-destructive'
+					)
+				"
+				>Grid Size</label
+			>
+			<div class="flex items-center gap-6">
+				<FormField v-slot="{ componentField }" name="rows">
+					<FormItem>
+						<FormControl>
+							<Input type="number" placeholder="Rows" v-bind="componentField" />
+						</FormControl>
+						<FormDescription v-if="!errors.rows"> Rows </FormDescription>
+						<FormMessage />
+					</FormItem>
+				</FormField>
+				<span class="h-10 self-start grid place-items-center">x</span>
+				<FormField v-slot="{ componentField }" name="cols">
+					<FormItem>
+						<FormControl>
+							<Input type="number" placeholder="Cols" v-bind="componentField" />
+						</FormControl>
+						<FormDescription v-if="!errors.cols"> Columns </FormDescription>
+						<FormMessage />
+					</FormItem>
+				</FormField>
+			</div>
+		</div>
+
 		<div class="relative group">
 			<div
 				class="absolute inset-0 scale-90 bg-gradient-to-r -z-10 from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
