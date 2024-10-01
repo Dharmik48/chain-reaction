@@ -1,12 +1,68 @@
 <script setup lang="ts">
 import Game from '@/components/Game.vue'
+import SetupForm from './components/SetupForm.vue'
 </script>
 
 <template>
 	<main class="min-h-screen p-12">
-		<div>
-			<h1 class="text-5xl text-primary">Chain Reaction</h1>
-			<Game />
+		<div class="flex flex-col items-center justify-center h-full">
+			<div class="flex items-center gap-3">
+				<div class="flex flex-col items-center animate-spin">
+					<div class="h-4 w-4 rounded-full translate-y-1 bg-red-500"></div>
+					<div class="flex -translate-y-1">
+						<div class="h-4 w-4 rounded-full translate-x-1 bg-red-500"></div>
+						<div class="h-4 w-4 rounded-full -translate-x-1 bg-red-500"></div>
+					</div>
+				</div>
+				<div class="flex animate-spin">
+					<div class="h-4 w-4 rounded-full translate-x-1 bg-blue-500"></div>
+					<div class="h-4 w-4 rounded-full -translate-x-1 bg-blue-500"></div>
+				</div>
+				<div class="h-4 w-4 rounded-full bg-red-500 animate-spin"></div>
+				<div class="flex animate-spin direction-reverse">
+					<div class="h-4 w-4 rounded-full translate-x-1 bg-blue-500"></div>
+					<div class="h-4 w-4 rounded-full -translate-x-1 bg-blue-500"></div>
+				</div>
+				<div class="flex flex-col items-center animate-spin direction-reverse">
+					<div class="h-4 w-4 rounded-full translate-y-1 bg-red-500"></div>
+					<div class="flex -translate-y-1">
+						<div class="h-4 w-4 rounded-full translate-x-1 bg-red-500"></div>
+						<div class="h-4 w-4 rounded-full -translate-x-1 bg-red-500"></div>
+					</div>
+				</div>
+			</div>
+			<h1
+				class="text-2xl md:text-5xl bg-gradient-to-r from-red-500 to-blue-700 bg-clip-text text-transparent w-fit font-sixtyfour my-8"
+			>
+				Chain Reaction
+			</h1>
+			<div class="flex items-center gap-3 mb-12">
+				<div class="flex flex-col items-center animate-spin">
+					<div class="h-4 w-4 rounded-full translate-y-1 bg-red-500"></div>
+					<div class="flex -translate-y-1">
+						<div class="h-4 w-4 rounded-full translate-x-1 bg-red-500"></div>
+						<div class="h-4 w-4 rounded-full -translate-x-1 bg-red-500"></div>
+					</div>
+				</div>
+				<div class="flex animate-spin">
+					<div class="h-4 w-4 rounded-full translate-x-1 bg-blue-500"></div>
+					<div class="h-4 w-4 rounded-full -translate-x-1 bg-blue-500"></div>
+				</div>
+				<div class="h-4 w-4 rounded-full bg-red-500 animate-spin"></div>
+				<div class="flex animate-spin direction-reverse">
+					<div class="h-4 w-4 rounded-full translate-x-1 bg-blue-500"></div>
+					<div class="h-4 w-4 rounded-full -translate-x-1 bg-blue-500"></div>
+				</div>
+				<div class="flex flex-col items-center animate-spin direction-reverse">
+					<div class="h-4 w-4 rounded-full translate-y-1 bg-red-500"></div>
+					<div class="flex -translate-y-1">
+						<div class="h-4 w-4 rounded-full translate-x-1 bg-red-500"></div>
+						<div class="h-4 w-4 rounded-full -translate-x-1 bg-red-500"></div>
+					</div>
+				</div>
+			</div>
+			<SetupForm />
+			<!-- <Game /> -->
 		</div>
 	</main>
 </template>
