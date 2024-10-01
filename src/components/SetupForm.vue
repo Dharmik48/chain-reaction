@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { h } from 'vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
@@ -26,12 +25,12 @@ import router from '@/router'
 const formSchema = toTypedSchema(
 	z.object({
 		players: z.number().min(2, 'Min 2 players').max(8, 'Max 8 players'),
-		rows: z.number(),
-		cols: z.number(),
+		rows: z.number().min(5, 'Min 5 rows').max(25, 'Max 25 rows'),
+		cols: z.number().min(5, 'Min 5 cols').max(25, 'Max 25 cols'),
 	})
 )
 
-const { handleSubmit, setFieldValue } = useForm({
+const { handleSubmit, setFieldValue, errors } = useForm({
 	validationSchema: formSchema,
 	initialValues: {
 		players: 2,
@@ -41,7 +40,6 @@ const { handleSubmit, setFieldValue } = useForm({
 })
 
 const onSubmit = handleSubmit(values => {
-	const query = `?p=${values.players}&rows=${values.rows}$cols=${values.cols}`
 	router.push({ path: '/game', query: values })
 })
 </script>
@@ -76,27 +74,37 @@ const onSubmit = handleSubmit(values => {
 				<FormDescription>Upto 8 players</FormDescription>
 				<FormMessage />
 			</FormItem>
-			<div class="flex items-end gap-6">
-				<FormField v-slot="{ componentField }" name="rows">
-					<FormItem>
-						<FormLabel>Grid Size</FormLabel>
-						<FormControl>
-							<Input type="number" placeholder="Rows" v-bind="componentField" />
-						</FormControl>
-						<FormDescription> Rows </FormDescription>
-						<FormMessage />
-					</FormItem>
-				</FormField>
-				<span class="self-center">x</span>
-				<FormField v-slot="{ componentField }" name="cols">
-					<FormItem>
-						<FormControl>
-							<Input type="number" placeholder="Cols" v-bind="componentField" />
-						</FormControl>
-						<FormDescription> Columns </FormDescription>
-						<FormMessage />
-					</FormItem>
-				</FormField>
+			<div class="space-y-2">
+				<FormLabel>Grid Size</FormLabel>
+				<div class="flex items-center gap-6">
+					<FormField v-slot="{ componentField }" name="rows">
+						<FormItem>
+							<FormControl>
+								<Input
+									type="number"
+									placeholder="Rows"
+									v-bind="componentField"
+								/>
+							</FormControl>
+							<FormDescription v-if="!errors.rows"> Rows </FormDescription>
+							<FormMessage />
+						</FormItem>
+					</FormField>
+					<span class="h-10 self-start grid place-items-center">x</span>
+					<FormField v-slot="{ componentField }" name="cols">
+						<FormItem>
+							<FormControl>
+								<Input
+									type="number"
+									placeholder="Cols"
+									v-bind="componentField"
+								/>
+							</FormControl>
+							<FormDescription v-if="!errors.cols"> Columns </FormDescription>
+							<FormMessage />
+						</FormItem>
+					</FormField>
+				</div>
 			</div>
 		</FormField>
 		<div class="relative group">
