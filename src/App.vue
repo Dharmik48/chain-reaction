@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import Game from '@/components/Game.vue'
-import SetupForm from './components/SetupForm.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
@@ -61,7 +60,8 @@ import SetupForm from './components/SetupForm.vue'
 					</div>
 				</div>
 			</div>
-			<SetupForm />
+			<RouterView />
+			<!-- <SetupForm /> -->
 			<!-- <Game /> -->
 		</div>
 	</main>

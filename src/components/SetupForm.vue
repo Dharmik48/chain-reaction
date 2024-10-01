@@ -21,6 +21,7 @@ import {
 	NumberFieldInput,
 } from '@/components/ui/number-field'
 import { Input } from './ui/input'
+import router from '@/router'
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -40,7 +41,8 @@ const { handleSubmit, setFieldValue } = useForm({
 })
 
 const onSubmit = handleSubmit(values => {
-	console.log(values)
+	const query = `?p=${values.players}&rows=${values.rows}$cols=${values.cols}`
+	router.push({ path: '/game', query: values })
 })
 </script>
 

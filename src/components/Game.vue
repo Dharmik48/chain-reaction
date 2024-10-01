@@ -5,10 +5,14 @@ import { PLAYERS } from '@/lib/constants'
 import { generateBoard, getExpandToCells } from '@/lib/utils'
 import { Cell } from '@/types'
 import gsap from 'gsap'
+import { useRoute } from 'vue-router'
+import { Button } from '@/components/ui/button'
 
-const PLAYERS_COUNT = 2
-const ROWS = 12
-const COLS = 6
+const route = useRoute()
+
+const PLAYERS_COUNT = Number(route.query.players) || 2
+const ROWS = Number(route.query.rows) || 12
+const COLS = Number(route.query.cols) || 6
 const ANIMATION_DURATION = 0.5
 
 let turn = ref(0)
@@ -84,7 +88,6 @@ watch(board.value, (_oldBoard, newBoard) => {
 </script>
 
 <template>
-	<h1>Game</h1>
 	<ul ref="board-ref" class="relative">
 		<div v-for="(row, i) in board" :key="i" class="flex">
 			<li
@@ -131,4 +134,12 @@ watch(board.value, (_oldBoard, newBoard) => {
 			</li>
 		</div>
 	</ul>
+	<RouterLink class="mt-12" to="/"
+		><div class="relative group">
+			<div
+				class="absolute inset-0 scale-90 bg-gradient-to-r -z-10 from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
+			></div>
+			<Button class="bg-white w-full hover:bg-white"> Restart </Button>
+		</div></RouterLink
+	>
 </template>
