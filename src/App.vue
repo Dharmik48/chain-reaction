@@ -4,7 +4,7 @@ import { RouterView } from 'vue-router'
 
 <template>
 	<main class="min-h-screen p-12">
-		<div class="flex flex-col items-center justify-center h-full">
+		<div class="flex flex-col items-center justify-center h-full w-max mx-auto">
 			<div class="flex items-center gap-3">
 				<div class="flex flex-col items-center animate-spin">
 					<div class="h-4 w-4 rounded-full translate-y-1 bg-red-500"></div>
