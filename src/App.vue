@@ -14,8 +14,8 @@ if (gameId)
 
 <template>
 	<Toaster />
-	<main class="min-h-screen p-12">
-		<div class="flex flex-col items-center justify-center h-full w-max mx-auto">
+	<main class="min-h-screen p-8 lg:p-12">
+		<div class="flex flex-col items-center justify-center h-full mx-auto">
 			<div class="flex items-center gap-3">
 				<div class="flex flex-col items-center animate-spin">
 					<div class="h-4 w-4 rounded-full translate-y-1 bg-red-500"></div>
@@ -42,7 +42,7 @@ if (gameId)
 				</div>
 			</div>
 			<h1
-				class="text-3xl md:text-5xl bg-gradient-to-r from-red-500 to-blue-700 bg-clip-text text-transparent w-fit font-sixtyfour my-8 text-center"
+				class="text-3xl md:text-5xl bg-gradient-to-r from-red-500 to-blue-700 bg-clip-text text-transparent my-8 font-sixtyfour text-center"
 			>
 				Chain Reaction
 			</h1>
