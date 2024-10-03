@@ -13,7 +13,10 @@ export default defineSchema({
 			)
 		),
 		code: v.string(),
-		players: v.array(v.object({ playerId: v.string(), name: v.string() })),
+		players: v.array(
+			v.object({ playerId: v.string(), name: v.string(), creator: v.boolean() })
+		),
 		playerCount: v.number(),
+		status: v.string(),
 	}).index('by_code', ['code']),
 })

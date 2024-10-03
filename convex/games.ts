@@ -44,10 +44,11 @@ export const create = mutation({
 		const uniqueCode = randomUUID()
 
 		const game = ctx.db.insert('games', {
-			players: [args.player],
+			players: [{ ...args.player, creator: true }],
 			board,
 			playerCount: args.playersCount,
 			code: uniqueCode,
+			status: 'waiting',
 		})
 
 		return game
@@ -70,7 +71,42 @@ export const addPlayer = mutation({
 		if (game.players.length === game.playerCount)
 			return { error: 'Game is already full!' }
 
-		await ctx.db.patch(game._id, { players: [...game.players, args.player] })
+		await ctx.db.patch(game._id, {
+			players: [...game.players, { ...args.player, creator: false }],
+		})
+
+		return game
+	},
+})
+
+export const remove = mutation({
+	args: {
+		id: v.id('games'),
+	},
+	handler: async (ctx, args) => {
+		await ctx.db.delete(args.id)
+
+		return true
+	},
+})
+
+export const removePlayer = mutation({
+	args: {
+		id: v.id('games'),
+		playerId: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db.get(args.id)
+
+		if (!game) return { error: 'Game not found' }
+
+		const playersAfterRemoving = game.players.filter(
+			player => player.playerId !== args.playerId
+		)
+
+		await ctx.db.patch(game._id, {
+			players: playersAfterRemoving,
+		})
 
 		return game
 	},

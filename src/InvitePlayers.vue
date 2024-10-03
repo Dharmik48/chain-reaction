@@ -8,35 +8,57 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card'
-import { Switch } from './components/ui/switch'
-import { AlertCircle } from 'lucide-vue-next'
+import { AlertCircle, Loader2 } from 'lucide-vue-next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { useRoute } from 'vue-router'
-import { useConvexQuery } from '@convex-vue/core'
+import { useRoute, useRouter } from 'vue-router'
+import { useConvexMutation, useConvexQuery } from '@convex-vue/core'
 import { api } from '../convex/_generated/api'
 import { Id } from 'convex/_generated/dataModel'
-import { cn } from './lib/utils'
 import { PLAYERS } from './lib/constants'
 import { ref } from 'vue'
-import ShortUniqueId from 'short-unique-id'
-
+import { toast } from '@/components/ui/toast'
+// TODO add waiting for admin to start game
+// TODO add leave game button
 const route = useRoute()
-
-const { randomUUID } = new ShortUniqueId()
+const router = useRouter()
 
 const error = ref('')
 const { gameId } = route.query
 
-const { data, isLoading, suspense }: any = useConvexQuery(api.games.get, {
+const removeGame = useConvexMutation(api.games.remove)
+const removePlayer = useConvexMutation(api.games.removePlayer)
+const { data, suspense }: any = useConvexQuery(api.games.get, {
 	id: gameId as Id<'games'>,
 })
 await suspense()
 
 if (data.value.error) error.value = data.value.error
+
+const currentPlayer = sessionStorage.getItem('playerId')
+
+const startGame = () => {
+	if (data.value.players.length !== data.value.playerCount)
+		return toast({ title: 'Not enough players!', variant: 'destructive' })
+}
+
+const deleteGame = async () => {
+	await removeGame.mutate({ id: gameId as Id<'games'> })
+	sessionStorage.clear()
+	router.push('/')
+}
+
+const leaveGame = async () => {
+	await removePlayer.mutate({
+		id: gameId as Id<'games'>,
+		playerId: currentPlayer!,
+	})
+	sessionStorage.clear()
+	router.push('/')
+}
 </script>
 
 <template>
-	<div class="space-y-4" v-if="!gameId || error">
+	<div class="space-y-4 w-full" v-if="!gameId || error">
 		<Alert variant="destructive">
 			<AlertCircle class="w-4 h-4" />
 			<AlertTitle>Error</AlertTitle>
@@ -56,7 +78,7 @@ if (data.value.error) error.value = data.value.error
 		</div>
 	</div>
 
-	<Card class="w-full" v-else>
+	<Card class="min-w-80" v-else>
 		<CardHeader>
 			<CardTitle>Invite Players</CardTitle>
 			<CardDescription
@@ -86,17 +108,57 @@ if (data.value.error) error.value = data.value.error
 				</div>
 			</div>
 		</CardContent>
-		<CardFooter>
-			<div class="relative group w-full">
-				<Button
-					type="submit"
-					class="relative z-10 bg-white w-full hover:bg-white"
-				>
-					Start Game
-				</Button>
-				<div
-					class="absolute inset-0 scale-90 bg-gradient-to-r from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
-				></div>
+
+		<CardFooter
+			v-if="
+				currentPlayer ===
+				data.players.find((player: any) => player.creator).playerId
+			"
+		>
+			<div class="flex gap-4 w-full">
+				<div class="relative group w-full">
+					<Button
+						@click="startGame"
+						class="relative z-10 bg-white w-full hover:bg-white"
+					>
+						Start Game
+					</Button>
+					<div
+						class="absolute inset-0 scale-90 bg-gradient-to-r from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
+					></div>
+				</div>
+				<div class="relative group w-full">
+					<Button
+						variant="destructive"
+						@click="deleteGame"
+						class="relative z-10 w-full"
+					>
+						Cancel
+					</Button>
+					<div
+						class="absolute inset-0 scale-90 bg-red-500 blur group-hover:scale-100 transition-transform"
+					></div>
+				</div>
+			</div>
+		</CardFooter>
+		<CardFooter v-else>
+			<div class="flex gap-8 w-full flex-col">
+				<div class="flex gap-2">
+					<Loader2 class="animate-spin" />
+					<p>Waiting for THE CREATOR to start the game</p>
+				</div>
+				<div class="relative group w-full">
+					<Button
+						variant="destructive"
+						@click="leaveGame"
+						class="relative z-10 w-full"
+					>
+						Leave Game
+					</Button>
+					<div
+						class="absolute inset-0 scale-90 bg-red-500 blur group-hover:scale-100 transition-transform"
+					></div>
+				</div>
 			</div>
 		</CardFooter>
 	</Card>

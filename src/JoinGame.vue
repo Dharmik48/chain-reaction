@@ -13,16 +13,15 @@ import {
 	FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import router from '@/router'
-import { cn } from '@/lib/utils'
+import { useRouter } from 'vue-router'
 import { useConvexMutation } from '@convex-vue/core'
 import { api } from '../convex/_generated/api'
-import { useToast } from '@/components/ui/toast'
 import { toast } from '@/components/ui/toast'
 import ShortUniqueId from 'short-unique-id'
 
 const addPlayer = useConvexMutation(api.games.addPlayer)
 const { randomUUID } = new ShortUniqueId()
+const router = useRouter()
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -46,6 +45,14 @@ const onSubmit = handleSubmit(async values => {
 			title: game.error || 'Something went wrong',
 			variant: 'destructive',
 		})
+
+	sessionStorage.setItem('gameId', game._id)
+	sessionStorage.setItem('playerId', playerId)
+
+	router.push({
+		path: '/invite',
+		query: { gameId: game._id },
+	})
 })
 </script>
 
