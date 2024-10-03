@@ -101,28 +101,28 @@ watch(board.value, (_oldBoard, newBoard) => {
 				<div
 					v-if="box.player !== null && j !== 0"
 					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
-					:style="{backgroundColor: PLAYERS[box.player!].color}"
+					:style="{ backgroundColor: PLAYERS[box.player!].color }"
 					data-x="-40"
 					data-y="0"
 				></div>
 				<div
 					v-if="box.player !== null && j !== COLS - 1"
 					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
-					:style="{backgroundColor: PLAYERS[box.player!].color}"
+					:style="{ backgroundColor: PLAYERS[box.player!].color }"
 					data-x="40"
 					data-y="0"
 				></div>
 				<div
 					v-if="box.player !== null && i !== 0"
 					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
-					:style="{backgroundColor: PLAYERS[box.player!].color}"
+					:style="{ backgroundColor: PLAYERS[box.player!].color }"
 					data-x="0"
 					data-y="-40"
 				></div>
 				<div
 					v-if="box.player !== null && i !== ROWS - 1"
 					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
-					:style="{backgroundColor: PLAYERS[box.player!].color}"
+					:style="{ backgroundColor: PLAYERS[box.player!].color }"
 					data-x="0"
 					data-y="40"
 				></div>

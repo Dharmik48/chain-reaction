@@ -1,8 +1,19 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import { RouterView, useRouter } from 'vue-router'
+import Toaster from '@/components/ui/toast/Toaster.vue'
+
+const gameId = sessionStorage.getItem('gameId')
+const router = useRouter()
+
+if (gameId)
+	router.push({
+		path: '/invite',
+		query: { gameId: gameId },
+	})
 </script>
 
 <template>
+	<Toaster />
 	<main class="min-h-screen p-12">
 		<div class="flex flex-col items-center justify-center h-full w-max mx-auto">
 			<div class="flex items-center gap-3">
@@ -60,7 +71,9 @@ import { RouterView } from 'vue-router'
 					</div>
 				</div>
 			</div>
-			<RouterView />
+			<Suspense>
+				<RouterView />
+			</Suspense>
 			<!-- <SetupForm /> -->
 			<!-- <Game /> -->
 		</div>
