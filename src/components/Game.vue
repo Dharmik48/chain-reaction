@@ -1,53 +1,84 @@
 <script setup lang="ts">
-import { nextTick, ref, useTemplateRef, watch } from 'vue'
-import Spheres from './Spheres.vue'
+import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { PLAYERS } from '@/lib/constants'
-import { generateBoard, getExpandToCells } from '@/lib/utils'
-import { Cell } from '@/types'
+import { getExpandToCells } from '@/lib/utils'
+import Cell from '@/components/Cell.vue'
 import gsap from 'gsap'
 import { useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
+import { useConvexMutation, useConvexQuery } from '@convex-vue/core'
+import { api } from '../../convex/_generated/api'
+import { Id } from '../../convex/_generated/dataModel'
 
 const route = useRoute()
+const gameId = route.query.gameId
 
-const PLAYERS_COUNT = Number(route.query.players) || 2
-const ROWS = Number(route.query.rows) || 12
-const COLS = Number(route.query.cols) || 6
+const { mutate: mutateTurn } = useConvexMutation(api.games.nextPlayer)
+const { data, suspense }: any = useConvexQuery(api.games.get, {
+	id: gameId as Id<'games'>,
+})
+
+await suspense()
+
+const ROWS = Number(data.value.grid.rows) || 12
+const COLS = Number(data.value.grid.cols) || 6
 const ANIMATION_DURATION = 0.5
 
-let turn = ref(0)
-const boardRef = useTemplateRef('board-ref')
-const board = ref<Cell[][]>(generateBoard(ROWS, COLS))
-const disabled = ref(false)
+const updateBoard = useConvexMutation(api.games.updateBoard)
 
-function add(row: number, col: number) {
+const boardRef = useTemplateRef('board-ref')
+// let board = data.value.board
+const disabled = ref(false)
+const player = sessionStorage.getItem('playerId')
+
+async function add(row: number, col: number) {
+	if (data.value.turn !== player) return
 	if (
-		disabled.value ||
-		(board.value[row][col].player !== null &&
-			board.value[row][col].player !== turn.value)
+		// disabled.value ||
+		data.value.board[row][col].player !== null &&
+		data.value.board[row][col].player !== player
 	)
 		return
 
-	board.value[row][col].player = turn.value
-	board.value[row][col].count++
-	nextPlayer()
-}
+	data.value.board[row][col].player = player
+	data.value.board[row][col].count++
+	// if (data.value.board[row][col].count > data.value.board[row][col].max)
+	// 	await animateSphereAndExpand(row, col)
 
-function expand(row: number, col: number) {
-	const expandTo = getExpandToCells(row, col, ROWS, COLS)
-
-	expandTo.forEach(cell => {
-		board.value[cell.r][cell.c].count++
-		board.value[cell.r][cell.c].player = board.value[row][col].player
-		board.value[row][col].count--
+	await updateBoard.mutate({
+		id: gameId as Id<'games'>,
+		board: data.value.board,
+		updateTurn: true,
 	})
-	if (board.value[row][col].count === 0) board.value[row][col].player = null
+	// await nextPlayer()
 }
 
-function nextPlayer() {
-	if (turn.value === PLAYERS_COUNT - 1) turn.value = 0
-	else turn.value++
+async function expand(row: number, col: number) {
+	if (data.value.board[row][col].count === 0) return
+	if (data.value.board[row][col].count < data.value.board[row][col].max) return
+	const expandTo = getExpandToCells(row, col, ROWS, COLS)
+	console.log(expandTo.length, data.value.board[row][col].count)
+
+	expandTo.forEach(async cell => {
+		data.value.board[cell.r][cell.c].count++
+		data.value.board[cell.r][cell.c].player = data.value.board[row][col].player
+		// if (
+		// 	data.value.board[cell.r][cell.c].count >
+		// 	data.value.board[cell.r][cell.c].max
+		// )
+		// 	await animateSphereAndExpand(cell.r, cell.c)
+		data.value.board[row][col].count--
+	})
+
+	if (data.value.board[row][col].count === 0)
+		data.value.board[row][col].player = null
 }
+
+// async function nextPlayer() {
+// 	// if (turn.value === PLAYERS_COUNT - 1) turn.value = 0
+// 	// else turn.value++
+// 	await mutateTurn({ id: gameId as Id<'games'> })
+// }
 
 async function animateSphereAndExpand(row: number, col: number) {
 	disabled.value = true
@@ -69,69 +100,69 @@ async function animateSphereAndExpand(row: number, col: number) {
 			onComplete: () => {
 				gsap.set(sphere, { x: 0, y: 0 })
 				if (i !== expandTo.length - 1) return
-				expand(row, col)
 				originCell?.classList.remove('hide-spheres')
 				disabled.value = false
+
+				if (data.value.turn !== player) return
+
+				expand(row, col)
+				updateBoard.mutate({
+					id: gameId as Id<'games'>,
+					board: data.value.board,
+				})
 			},
 		})
 	})
 }
 
-watch(board.value, (_oldBoard, newBoard) => {
-	newBoard.forEach((row, i) => {
-		row.forEach((_cell, j) => {
-			if (newBoard[i][j].count < newBoard[i][j].max + 1) return
+watch(data, newData => {
+	newData.board.forEach((row: any, i: number) => {
+		row.forEach((_cell: any, j: number) => {
+			// console.log(newData.board[i][j].count, newData.board[i][j].max + 1)
+
+			if (newData.board[i][j].count < newData.board[i][j].max + 1) return
 			animateSphereAndExpand(i, j)
 		})
 	})
 })
+
+// watch(board, async newBoard => {
+// 	console.log(newBoard)
+
+// 	newBoard.forEach((row: any, i: number) => {
+// 		row.forEach((_cell: any, j: number) => {
+// 			if (newBoard[i][j].count < newBoard[i][j].max + 1) return
+// 			animateSphereAndExpand(i, j)
+// 		})
+// 	})
+// })
+
+const turnIndex = computed(() =>
+	data.value.players.findIndex(
+		(player: any) => player.playerId === data.value.turn
+	)
+)
 </script>
 
 <template>
 	<ul ref="board-ref" class="relative px-10 mx-auto">
-		<div v-for="(row, i) in board" :key="i" class="flex">
-			<li
+		<div v-for="(row, i) in data.board" :key="i" class="flex">
+			<Cell
 				v-for="(box, j) in row"
-				:key="`i,j`"
-				class="relative h-10 aspect-square cursor-pointer grid place-items-center border"
+				:key="`${i},${j}`"
 				@click="add(i, j)"
-				:style="{ borderColor: PLAYERS[turn].color }"
-				:id="`c${i}-${j}`"
-			>
-				<div
-					v-if="box.player !== null && j !== 0"
-					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
-					:style="{ backgroundColor: PLAYERS[box.player!].color }"
-					data-x="-40"
-					data-y="0"
-				></div>
-				<div
-					v-if="box.player !== null && j !== COLS - 1"
-					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
-					:style="{ backgroundColor: PLAYERS[box.player!].color }"
-					data-x="40"
-					data-y="0"
-				></div>
-				<div
-					v-if="box.player !== null && i !== 0"
-					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
-					:style="{ backgroundColor: PLAYERS[box.player!].color }"
-					data-x="0"
-					data-y="-40"
-				></div>
-				<div
-					v-if="box.player !== null && i !== ROWS - 1"
-					class="h-4 w-4 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 moving-sphere"
-					:style="{ backgroundColor: PLAYERS[box.player!].color }"
-					data-x="0"
-					data-y="40"
-				></div>
-				<Spheres
-					:count="box.count"
-					:animate-count="box.max"
-					:player="box.player"
-				/>
-			</li>
+				:box="box"
+				:i="i"
+				:j="j"
+				:rows="ROWS"
+				:cols="COLS"
+				:borderColor="PLAYERS[turnIndex].color"
+				:player="
+					data.players[
+						data.players.findIndex((p: any) => p.playerId === box.player)
+					]
+				"
+			/>
 		</div>
 	</ul>
 	<RouterLink class="mt-12" to="/"

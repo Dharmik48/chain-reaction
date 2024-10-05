@@ -15,7 +15,7 @@ import { useConvexMutation, useConvexQuery } from '@convex-vue/core'
 import { api } from '../convex/_generated/api'
 import { Id } from 'convex/_generated/dataModel'
 import { PLAYERS } from './lib/constants'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { toast } from '@/components/ui/toast'
 // TODO add waiting for admin to start game
 // TODO add leave game button
@@ -27,6 +27,7 @@ const { gameId } = route.query
 
 const removeGame = useConvexMutation(api.games.remove)
 const removePlayer = useConvexMutation(api.games.removePlayer)
+const updateStatus = useConvexMutation(api.games.updateStatus)
 const { data, suspense }: any = useConvexQuery(api.games.get, {
 	id: gameId as Id<'games'>,
 })
@@ -36,9 +37,14 @@ if (data.value.error) error.value = data.value.error
 
 const currentPlayer = sessionStorage.getItem('playerId')
 
-const startGame = () => {
+const startGame = async () => {
 	if (data.value.players.length !== data.value.playerCount)
 		return toast({ title: 'Not enough players!', variant: 'destructive' })
+
+	await updateStatus.mutate({
+		id: gameId as Id<'games'>,
+		status: 'ongoing',
+	})
 }
 
 const deleteGame = async () => {
@@ -55,6 +61,17 @@ const leaveGame = async () => {
 	sessionStorage.clear()
 	router.push('/')
 }
+
+watch(data, newData => {
+	if (newData.error) {
+		toast({ title: 'Game cancelled.' })
+		sessionStorage.clear()
+		router.push('/')
+	}
+
+	if (newData.status === 'ongoing')
+		router.push({ path: '/game', query: { gameId } })
+})
 </script>
 
 <template>
@@ -78,7 +95,7 @@ const leaveGame = async () => {
 		</div>
 	</div>
 
-	<Card class="min-w-80" v-else>
+	<Card class="min-w-80" v-else-if="data.players">
 		<CardHeader>
 			<CardTitle>Invite Players</CardTitle>
 			<CardDescription

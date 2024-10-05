@@ -19,6 +19,17 @@ function generateBoard(x: number, y: number) {
 	)
 }
 
+const PLAYERS = [
+	{ id: 0, color: 'red' },
+	{ id: 1, color: 'green' },
+	{ id: 2, color: 'blue' },
+	{ id: 3, color: 'yellow' },
+	{ id: 4, color: 'purple' },
+	{ id: 5, color: 'cyan' },
+	{ id: 6, color: 'orange' },
+	{ id: 7, color: 'white' },
+]
+
 export const get = query({
 	args: {
 		id: v.id('games'),
@@ -44,11 +55,13 @@ export const create = mutation({
 		const uniqueCode = randomUUID()
 
 		const game = ctx.db.insert('games', {
-			players: [{ ...args.player, creator: true }],
+			players: [{ ...args.player, creator: true, color: 'red' }],
 			board,
 			playerCount: args.playersCount,
 			code: uniqueCode,
 			status: 'waiting',
+			grid: { rows: args.rows, cols: args.cols },
+			turn: args.player.playerId,
 		})
 
 		return game
@@ -71,8 +84,10 @@ export const addPlayer = mutation({
 		if (game.players.length === game.playerCount)
 			return { error: 'Game is already full!' }
 
+		const color = PLAYERS[game.players.length].color
+
 		await ctx.db.patch(game._id, {
-			players: [...game.players, { ...args.player, creator: false }],
+			players: [...game.players, { ...args.player, creator: false, color }],
 		})
 
 		return game
@@ -109,5 +124,86 @@ export const removePlayer = mutation({
 		})
 
 		return game
+	},
+})
+
+export const updateStatus = mutation({
+	args: {
+		id: v.id('games'),
+		status: v.string(),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db.get(args.id)
+
+		if (!game) return { error: 'Game not found' }
+
+		await ctx.db.patch(game._id, {
+			status: args.status,
+		})
+
+		return game
+	},
+})
+
+export const updateBoard = mutation({
+	args: {
+		id: v.id('games'),
+		board: v.array(
+			v.array(
+				v.object({
+					player: v.union(v.null(), v.string()),
+					count: v.number(),
+					max: v.number(),
+				})
+			)
+		),
+		updateTurn: v.optional(v.boolean()),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db.get(args.id)
+
+		if (!game) return { error: 'Game not found' }
+
+		const turn = game.players.findIndex(player => player.playerId === game.turn)
+		const playerCount = game.playerCount
+		let nextTurn
+
+		if (turn === playerCount - 1) nextTurn = 0
+		else nextTurn = turn + 1
+
+		if (!args.updateTurn) {
+			await ctx.db.patch(game._id, {
+				board: args.board,
+			})
+		} else {
+			await ctx.db.patch(game._id, {
+				board: args.board,
+				turn: game.players[nextTurn].playerId,
+			})
+		}
+
+		return game
+	},
+})
+
+export const nextPlayer = mutation({
+	args: {
+		id: v.id('games'),
+	},
+	handler: async (ctx, args) => {
+		const game = await ctx.db.get(args.id)
+
+		if (!game) return { error: 'Game not found' }
+
+		const turn = game.players.findIndex(player => player.playerId === game.turn)
+		const playerCount = game.playerCount
+		let nextTurn
+
+		if (turn === playerCount - 1) nextTurn = 0
+		else nextTurn = turn + 1
+
+		await ctx.db.patch(args.id, { turn: game.players[nextTurn].playerId })
+
+		return true
 	},
 })
