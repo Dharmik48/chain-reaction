@@ -13,7 +13,8 @@ import { Id } from '../../convex/_generated/dataModel'
 const route = useRoute()
 const gameId = route.query.gameId
 
-const { mutate: mutateTurn } = useConvexMutation(api.games.nextPlayer)
+const { mutate: mutateRestart } = useConvexMutation(api.games.restart)
+const { mutate: mutateCell } = useConvexMutation(api.games.addCount)
 const { data, suspense }: any = useConvexQuery(api.games.get, {
 	id: gameId as Id<'games'>,
 })
@@ -27,58 +28,43 @@ const ANIMATION_DURATION = 0.5
 const updateBoard = useConvexMutation(api.games.updateBoard)
 
 const boardRef = useTemplateRef('board-ref')
-// let board = data.value.board
+const board = computed(() => data.value.board)
 const disabled = ref(false)
+const shouldUpdate = ref(false)
 const player = sessionStorage.getItem('playerId')
 
 async function add(row: number, col: number) {
 	if (data.value.turn !== player) return
 	if (
-		// disabled.value ||
-		data.value.board[row][col].player !== null &&
-		data.value.board[row][col].player !== player
+		disabled.value ||
+		(board.value[row][col].player !== null &&
+			board.value[row][col].player !== player)
 	)
 		return
 
-	data.value.board[row][col].player = player
-	data.value.board[row][col].count++
-	// if (data.value.board[row][col].count > data.value.board[row][col].max)
-	// 	await animateSphereAndExpand(row, col)
+	board.value[row][col].player = player
+	board.value[row][col].count++
 
-	await updateBoard.mutate({
+	await mutateCell({
 		id: gameId as Id<'games'>,
-		board: data.value.board,
+		board: board.value,
 		updateTurn: true,
+		row,
+		col,
 	})
-	// await nextPlayer()
 }
 
 async function expand(row: number, col: number) {
-	if (data.value.board[row][col].count === 0) return
-	if (data.value.board[row][col].count < data.value.board[row][col].max) return
 	const expandTo = getExpandToCells(row, col, ROWS, COLS)
-	console.log(expandTo.length, data.value.board[row][col].count)
 
 	expandTo.forEach(async cell => {
-		data.value.board[cell.r][cell.c].count++
-		data.value.board[cell.r][cell.c].player = data.value.board[row][col].player
-		// if (
-		// 	data.value.board[cell.r][cell.c].count >
-		// 	data.value.board[cell.r][cell.c].max
-		// )
-		// 	await animateSphereAndExpand(cell.r, cell.c)
-		data.value.board[row][col].count--
+		board.value[cell.r][cell.c].count++
+		board.value[cell.r][cell.c].player = board.value[row][col].player
+		board.value[row][col].count--
 	})
 
-	if (data.value.board[row][col].count === 0)
-		data.value.board[row][col].player = null
+	if (board.value[row][col].count === 0) board.value[row][col].player = null
 }
-
-// async function nextPlayer() {
-// 	// if (turn.value === PLAYERS_COUNT - 1) turn.value = 0
-// 	// else turn.value++
-// 	await mutateTurn({ id: gameId as Id<'games'> })
-// }
 
 async function animateSphereAndExpand(row: number, col: number) {
 	disabled.value = true
@@ -95,47 +81,44 @@ async function animateSphereAndExpand(row: number, col: number) {
 			x: `+=${Number(sphere.dataset.x)}`,
 			y: `+=${Number(sphere.dataset.y)}`,
 			onStart: () => {
+				shouldUpdate.value = false
 				originCell?.classList.add('hide-spheres')
 			},
 			onComplete: () => {
 				gsap.set(sphere, { x: 0, y: 0 })
 				if (i !== expandTo.length - 1) return
+				expand(row, col)
 				originCell?.classList.remove('hide-spheres')
 				disabled.value = false
-
-				if (data.value.turn !== player) return
-
-				expand(row, col)
-				updateBoard.mutate({
-					id: gameId as Id<'games'>,
-					board: data.value.board,
-				})
+				shouldUpdate.value = true
 			},
 		})
 	})
 }
 
-watch(data, newData => {
-	newData.board.forEach((row: any, i: number) => {
-		row.forEach((_cell: any, j: number) => {
-			// console.log(newData.board[i][j].count, newData.board[i][j].max + 1)
+async function restart() {
+	await mutateRestart({ id: gameId as Id<'games'>, rows: ROWS, cols: COLS })
+}
 
-			if (newData.board[i][j].count < newData.board[i][j].max + 1) return
+watch(shouldUpdate, async newValue => {
+	await nextTick()
+	if (!newValue) return
+	if (data.value.turn !== player) return
+
+	updateBoard.mutate({
+		id: gameId as Id<'games'>,
+		board: board.value,
+	})
+})
+
+watch(board, async newBoard => {
+	newBoard.forEach((row: any, i: number) => {
+		row.forEach((cell: any, j: number) => {
+			if (cell.count < cell.max + 1) return
 			animateSphereAndExpand(i, j)
 		})
 	})
 })
-
-// watch(board, async newBoard => {
-// 	console.log(newBoard)
-
-// 	newBoard.forEach((row: any, i: number) => {
-// 		row.forEach((_cell: any, j: number) => {
-// 			if (newBoard[i][j].count < newBoard[i][j].max + 1) return
-// 			animateSphereAndExpand(i, j)
-// 		})
-// 	})
-// })
 
 const turnIndex = computed(() =>
 	data.value.players.findIndex(
@@ -146,7 +129,7 @@ const turnIndex = computed(() =>
 
 <template>
 	<ul ref="board-ref" class="relative px-10 mx-auto">
-		<div v-for="(row, i) in data.board" :key="i" class="flex">
+		<div v-for="(row, i) in board" :key="i" class="flex">
 			<Cell
 				v-for="(box, j) in row"
 				:key="`${i},${j}`"
@@ -165,12 +148,12 @@ const turnIndex = computed(() =>
 			/>
 		</div>
 	</ul>
-	<RouterLink class="mt-12" to="/"
-		><div class="relative group">
-			<div
-				class="absolute inset-0 scale-90 bg-gradient-to-r -z-10 from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
-			></div>
-			<Button class="bg-white w-full hover:bg-white"> Restart </Button>
-		</div></RouterLink
-	>
+	<div class="relative group">
+		<div
+			class="absolute inset-0 scale-90 bg-gradient-to-r -z-10 from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
+		></div>
+		<Button class="bg-white w-full hover:bg-white" @click="restart">
+			Restart
+		</Button>
+	</div>
 </template>

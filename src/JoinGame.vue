@@ -18,7 +18,7 @@ import { useConvexMutation } from '@convex-vue/core'
 import { api } from '../convex/_generated/api'
 import { toast } from '@/components/ui/toast'
 import ShortUniqueId from 'short-unique-id'
-import { client } from './lib/room'
+// import { client } from './lib/room'
 
 const addPlayer = useConvexMutation(api.games.addPlayer)
 const { randomUUID } = new ShortUniqueId()
