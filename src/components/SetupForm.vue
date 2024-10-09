@@ -22,6 +22,15 @@ import {
 import { Input } from './ui/input'
 import router from '@/router'
 import { cn } from '@/lib/utils'
+import { useConvexMutation } from '@convex-vue/core'
+import { api } from '../../convex/_generated/api'
+import { useToast } from './ui/toast'
+import ShortUniqueId from 'short-unique-id'
+
+const createGame = useConvexMutation(api.games.create)
+const { randomUUID } = new ShortUniqueId()
+
+const { toast } = useToast()
 
 const formSchema = toTypedSchema(
 	z.object({
@@ -40,8 +49,28 @@ const { handleSubmit, setFieldValue, errors } = useForm({
 	},
 })
 
-const onSubmit = handleSubmit(values => {
-	router.push({ path: '/game', query: values })
+const onSubmit = handleSubmit(async values => {
+	try {
+		const uniqueCode = randomUUID()
+		const gameId = await createGame.mutate({
+			rows: values.rows,
+			cols: values.cols,
+			playersCount: values.players,
+			player: { playerId: uniqueCode, name: 'THE CREATOR' },
+		})
+
+		toast({ title: 'Game created' })
+
+		sessionStorage.setItem('gameId', gameId as string)
+		sessionStorage.setItem('playerId', uniqueCode)
+
+		router.push({
+			path: '/invite',
+			query: { ...values, gameId },
+		})
+	} catch (e) {
+		toast({ title: 'Something went wrong', variant: 'destructive' })
+	}
 })
 </script>
 
@@ -114,8 +143,19 @@ const onSubmit = handleSubmit(values => {
 				class="absolute inset-0 scale-90 bg-gradient-to-r -z-10 from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
 			></div>
 			<Button type="submit" class="bg-white w-full hover:bg-white">
-				Start
+				Create Game
 			</Button>
+		</div>
+		<p class="text-center">OR</p>
+		<div class="relative group">
+			<div
+				class="absolute inset-0 scale-90 bg-gradient-to-r -z-10 from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
+			></div>
+			<RouterLink to="/join">
+				<Button type="submit" class="bg-white w-full hover:bg-white">
+					Join Game
+				</Button>
+			</RouterLink>
 		</div>
 	</form>
 </template>

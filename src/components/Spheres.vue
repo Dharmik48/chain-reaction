@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { PLAYERS } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
 defineProps<{
 	count: number
 	animateCount: number
-	player: null | number
+	player: null | string
+	color: string
 }>()
 </script>
 
@@ -15,7 +15,7 @@ defineProps<{
 		:class="
 			cn('h-4 w-4 rounded-full sphere', animateCount === 1 && 'animate-spin')
 		"
-		:style="{backgroundColor: PLAYERS[player!].color}"
+		:style="{ backgroundColor: color }"
 	></div>
 	<div
 		v-else-if="count === 2 && player !== null"
@@ -23,11 +23,11 @@ defineProps<{
 	>
 		<div
 			class="h-4 w-4 rounded-full translate-x-1 sphere"
-			:style="{backgroundColor: PLAYERS[player!].color}"
+			:style="{ backgroundColor: color }"
 		></div>
 		<div
 			class="h-4 w-4 rounded-full -translate-x-1 sphere"
-			:style="{backgroundColor: PLAYERS[player!].color}"
+			:style="{ backgroundColor: color }"
 		></div>
 	</div>
 	<div
@@ -38,16 +38,16 @@ defineProps<{
 	>
 		<div
 			class="h-4 w-4 rounded-full translate-y-1 shadow sphere"
-			:style="{backgroundColor: PLAYERS[player!].color}"
+			:style="{ backgroundColor: color }"
 		></div>
 		<div class="flex -translate-y-1">
 			<div
 				class="h-4 w-4 rounded-full translate-x-1 shadow-md sphere"
-				:style="{backgroundColor: PLAYERS[player!].color}"
+				:style="{ backgroundColor: color }"
 			></div>
 			<div
 				class="h-4 w-4 rounded-full -translate-x-1 shadow-md sphere"
-				:style="{backgroundColor: PLAYERS[player!].color}"
+				:style="{ backgroundColor: color }"
 			></div>
 		</div>
 	</div>

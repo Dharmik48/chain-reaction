@@ -10,3 +10,9 @@ export const PLAYERS: Player[] = [
 	{ id: 6, color: 'orange' },
 	{ id: 7, color: 'white' },
 ]
+
+export enum STATUS {
+	'waiting',
+	'ongoing',
+	'over',
+}
