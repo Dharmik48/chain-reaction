@@ -43,6 +43,7 @@ async function add(row: number, col: number) {
 			board.value[row][col].player !== player)
 	)
 		return
+	if (!!navigator.vibrate) navigator.vibrate(1000)
 
 	board.value[row][col].player = player
 	board.value[row][col].count++
