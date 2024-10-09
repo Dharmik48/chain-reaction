@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef, watch } from 'vue'
+import { computed, h, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { PLAYERS } from '@/lib/constants'
 import { getExpandToCells } from '@/lib/utils'
 import Cell from '@/components/Cell.vue'
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { useConvexMutation, useConvexQuery } from '@convex-vue/core'
 import { api } from '../../convex/_generated/api'
 import { Id } from '../../convex/_generated/dataModel'
+import { toast, ToastAction } from './ui/toast'
 
 const route = useRoute()
 const gameId = route.query.gameId
@@ -97,7 +98,30 @@ async function animateSphereAndExpand(row: number, col: number) {
 }
 
 async function restart() {
-	await mutateRestart({ id: gameId as Id<'games'>, rows: ROWS, cols: COLS })
+	toast({
+		title: 'Restart Game?',
+		description: 'Are you sure want to restart game?',
+		action: h(
+			ToastAction,
+			{ altText: 'ayo' },
+			{
+				el: () => 'button',
+				default: () =>
+					h(
+						'button',
+						{
+							onClick: async () =>
+								await mutateRestart({
+									id: gameId as Id<'games'>,
+									rows: ROWS,
+									cols: COLS,
+								}),
+						},
+						'Confirm'
+					),
+			}
+		),
+	})
 }
 
 watch(shouldUpdate, async newValue => {
@@ -148,7 +172,13 @@ const turnIndex = computed(() =>
 			/>
 		</div>
 	</ul>
-	<div class="relative group">
+	<div
+		class="relative group mt-8"
+		v-if="
+			player ===
+			data.players.filter((player: any) => player.creator)[0].playerId
+		"
+	>
 		<div
 			class="absolute inset-0 scale-90 bg-gradient-to-r -z-10 from-red-500 to-blue-500 blur group-hover:scale-100 transition-transform"
 		></div>
