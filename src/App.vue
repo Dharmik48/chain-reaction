@@ -14,7 +14,7 @@ if (gameId)
 
 <template>
 	<Toaster />
-	<main class="min-h-screen p-8 lg:p-12">
+	<main class="min-h-screen p-8 lg:p-12 w-fit">
 		<div class="flex flex-col items-center justify-center h-full mx-auto">
 			<div class="flex items-center gap-3">
 				<div class="flex flex-col items-center animate-spin">
