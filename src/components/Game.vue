@@ -29,6 +29,7 @@ const ANIMATION_DURATION = 0.5
 const updateBoard = useConvexMutation(api.games.updateBoard)
 
 const boardRef = useTemplateRef('board-ref')
+const audioRef = useTemplateRef('audio-ref')
 const board = computed(() => data.value.board)
 const disabled = ref(false)
 const shouldUpdate = ref(false)
@@ -84,6 +85,9 @@ async function animateSphereAndExpand(row: number, col: number) {
 			onStart: () => {
 				shouldUpdate.value = false
 				originCell?.classList.add('hide-spheres')
+				if (i !== expandTo.length - 1) return
+				const audio = new Audio(audioRef.value?.src)
+				audio.play()
 			},
 			onComplete: () => {
 				gsap.set(sphere, { x: 0, y: 0 })
@@ -186,4 +190,5 @@ const turnIndex = computed(() =>
 			Restart
 		</Button>
 	</div>
+	<audio ref="audio-ref" src="/pop.mp3"></audio>
 </template>
